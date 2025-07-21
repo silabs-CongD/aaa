@@ -6,4 +6,4 @@ echo 11111
 
 ls ~/zephyrproject/build
 echo 2222
-find ~/zephyrproject/build -name app
+find ~/zephyrproject/build -name app.o

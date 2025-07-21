@@ -10,7 +10,6 @@ ls ~/zephyrproject/build/CMakeFiles/app.dir
 echo 33333333333333
 ls changed_projects
 
-# Find all .c and .cpp files and copy them to the folder
 find changed_projects -type f \( -name "*.c" -o -name "*.cpp" \) -exec cp -- "{}" ~/zephyrproject/build/CMakeFiles/app.dir/ \;
 
 echo 444444444444

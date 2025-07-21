@@ -4,8 +4,6 @@ ls ~/zephyrproject/build/zephyr/CMakeFiles/zephyr.dir
 echo 11111
 # cat ~/zephyrproject/build/zephyr/zephyr_final.map
 
-ls ~/zephyrproject/build
+ls ~/zephyrproject/build/CMakeFiles
 echo 2222
-ls ~/zephyrproject/CMakeFiles
-echo 333
-find ~/zephyrproject/build -name app.o
+find ~/zephyrproject/build -name main.o

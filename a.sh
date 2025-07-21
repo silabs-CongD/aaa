@@ -6,4 +6,4 @@ echo 11111
 
 ls ~/zephyrproject/build/CMakeFiles/app.dir/src
 echo 2222
-find ~/zephyrproject/build -name main.o
+ls ~/zephyrproject/build/CMakeFiles/app.dir

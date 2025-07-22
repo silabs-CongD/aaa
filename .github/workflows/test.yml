@@ -19,9 +19,11 @@ jobs:
             with:
               repository: ${{ github.event.pull_request.head.user.login }}/${{ github.event.repository.name }}
               ref: ${{ github.event.pull_request.head.ref }}
+              path: community
         
           - name: Poll the change
             run: |
+              cd community
               git remote add upstream https://github.com/silabs-CongD/aaa.git
               git fetch upstream
               git diff --name-only upstream/master HEAD > git_log.txt
@@ -92,11 +94,11 @@ jobs:
           
           - name: Build the project
             run: |
-              ls .
+              ls $WORKSPACE
               
+              cd community
               python3 scripts/pre_build.py
               cat ./Makefile
               cat scripts/Makefile
 
-              cd ${{ github.workspace}} \
-              && make all
+              make all

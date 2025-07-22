@@ -28,8 +28,10 @@ for slcp_file in slcp_project_path_list:
 	project_name = os.path.basename(project_dir)
 
 	pre_build_makefile_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), "scripts/Makefile")
-	replace_in_file(pre_build_makefile_path, 'project_name', str(project_name))
 	os.system("cp " + pre_build_makefile_path + " " + project_dir)
+	project_make_path = os.path.join(project_dir, "Makefile")
+	replace_in_file(project_make_path, 'project_name', str(project_name))
+	
 	if not os.path.isfile(os.path.join(project_dir, "Makefile")):
 		print("Error: Not found Makefile in project folder:", project_dir)
 		sys.exit(1)

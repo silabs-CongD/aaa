@@ -8,4 +8,3 @@ all: build
 
 build:
 	@echo 'Building $@...!'
-	${MAKE} -C project_dir ${TARGET} TYPE=${TYPE}

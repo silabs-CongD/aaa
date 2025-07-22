@@ -13,87 +13,87 @@ jobs:
     FW_build:
         runs-on: ubuntu-22.04
         steps:
-        - name: Checkout fork repo
-          uses: actions/checkout@v4
-          with:
-            repository: ${{ github.event.pull_request.head.user.login }}/${{ github.event.repository.name }}
-            ref: ${{ github.event.pull_request.head.ref }}
-      
-        - name: Poll the change
-          run: |
-            git remote add upstream https://github.com/silabs-CongD/aaa.git
-            git fetch upstream
-            git diff --name-only upstream/master HEAD > git_log.txt
-            grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > git_diff.txt
-  
-            xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
-            xargs -I{} -a git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
-  
-            if ! [ -s source_list.txt -o -s solution_list.txt ]; then
-              printf 'Skip check. No changed project found.'
-              exit 0
-            fi
-  
-            slcp_path=$(cat solution_list.txt)
-            base_dir="${slcp_path%/*}"
-            echo "PROJECT_BASE_DIR=$base_dir" >> $GITHUB_ENV
-  
-            # For debug
-            cat git_diff.txt
+          - name: Checkout fork repo
+            uses: actions/checkout@v4
+            with:
+              repository: ${{ github.event.pull_request.head.user.login }}/${{ github.event.repository.name }}
+              ref: ${{ github.event.pull_request.head.ref }}
+        
+          - name: Poll the change
+            run: |
+              git remote add upstream https://github.com/silabs-CongD/aaa.git
+              git fetch upstream
+              git diff --name-only upstream/master HEAD > git_log.txt
+              grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > git_diff.txt
+    
+              xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
+              xargs -I{} -a git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
+    
+              if ! [ -s source_list.txt -o -s solution_list.txt ]; then
+                printf 'Skip check. No changed project found.'
+                exit 0
+              fi
+    
+              slcp_path=$(cat solution_list.txt)
+              base_dir="${slcp_path%/*}"
+              echo "PROJECT_BASE_DIR=$base_dir" >> $GITHUB_ENV
+    
+              # For debug
+              cat git_diff.txt
+
+
+          - name: Checkout
+            uses: actions/checkout@v4.2.2
+          - name: Install Dependencies
+            run: |
+                sudo apt-get update && \
+                sudo apt-get install --no-install-recommends -y \
+                clang \
+                clang-tidy \
+                cppcheck \
+                git \
+                build-essential \
+                curl \
+                jq \
+                python3-dev \
+                python3-pip \
+                ninja-build \
+                make \
+                wget \
+                zip \
+                unzip \
+                libgl1 \
+                libglib2.0-0 \
+                libpcre2-dev
+          - name: CMake 3.25.4
+            run: |
+              wget https://github.com/Kitware/CMake/releases/download/v3.25.3/cmake-3.25.3-linux-${{ env.ARCH }}.sh \
+              -q -O /tmp/cmake-install.sh \
+              && chmod u+x /tmp/cmake-install.sh \
+              && mkdir /opt/cmake-3.25.3 \
+              && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.25.3 \
+              && rm /tmp/cmake-install.sh \
+              && ln -sf /opt/cmake-3.25.3/bin/* /usr/local/bin
+          - name: Install GNU Arm Embedded Toolchain
+            run: |
+              cd /tmp/ \
+              && wget ${{ env.ARM_GCC_URL }} \
+              && tar -xf arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi.tar.xz \
+              && mv arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi /opt/gcc-arm-none-eabi \
+              && rm arm-gnu-toolchain-12.2.rel-${{ env.ARCH }}-arm-none-eabi -rf
+          - name: Simplicity Commander
+            run: |
+              wget https://www.silabs.com/documents/login/software/SimplicityCommander-Linux.zip \
+              && unzip SimplicityCommander-Linux.zip \
+              &&  tar -xf SimplicityCommander-Linux/Commander-cli_linux_${{ env.ARCH }}_*.tar.bz \
+              && mv commander-cli /opt/commander-cli \
+              && rm -rf SimplicityCommander-Linux.zip SimplicityCommander-Linux
           
-            - name: Checkout
-              uses: actions/checkout@v4.2.2
-            - name: Install Dependencies
-              run: |
-                  sudo apt-get update && \
-                  sudo apt-get install --no-install-recommends -y \
-                  clang \
-                  clang-tidy \
-                  cppcheck \
-                  git \
-                  build-essential \
-                  curl \
-                  jq \
-                  python3-dev \
-                  python3-pip \
-                  ninja-build \
-                  make \
-                  wget \
-                  zip \
-                  unzip \
-                  libgl1 \
-                  libglib2.0-0 \
-                  libpcre2-dev
-            - name: CMake 3.25.4
-              run: |
-                wget https://github.com/Kitware/CMake/releases/download/v3.25.3/cmake-3.25.3-linux-${{ env.ARCH }}.sh \
-                -q -O /tmp/cmake-install.sh \
-                && chmod u+x /tmp/cmake-install.sh \
-                && mkdir /opt/cmake-3.25.3 \
-                && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.25.3 \
-                && rm /tmp/cmake-install.sh \
-                && ln -sf /opt/cmake-3.25.3/bin/* /usr/local/bin
-            - name: Install GNU Arm Embedded Toolchain
-              run: |
-                cd /tmp/ \
-                && wget ${{ env.ARM_GCC_URL }} \
-                && tar -xf arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi.tar.xz \
-                && mv arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi /opt/gcc-arm-none-eabi \
-                && rm arm-gnu-toolchain-12.2.rel-${{ env.ARCH }}-arm-none-eabi -rf
-            - name: Simplicity Commander
-              run: |
-                wget https://www.silabs.com/documents/login/software/SimplicityCommander-Linux.zip \
-                && unzip SimplicityCommander-Linux.zip \
-                &&  tar -xf SimplicityCommander-Linux/Commander-cli_linux_${{ env.ARCH }}_*.tar.bz \
-                && mv commander-cli /opt/commander-cli \
-                && rm -rf SimplicityCommander-Linux.zip SimplicityCommander-Linux
-            
-            - name: Build the project
-              run: |
-                python3 scripts/pre_build.py
-                cat ./Makefile
-                cat scripts/Makefile
+          - name: Build the project
+            run: |
+              python3 scripts/pre_build.py
+              cat ./Makefile
+              cat scripts/Makefile
 
-                cd ${{ github.workspace}} \
-                && make all
-
+              cd ${{ github.workspace}} \
+              && make all

@@ -5,6 +5,7 @@ on:
       - master
  workflow_dispatch:
 env:
+    WORKSPACE: ${{ github.workspace }}
     ARCH: x86_64
     POST_BUILD_EXE: "/opt/commander-cli/commander-cli"
     ARM_GCC_DIR: "/opt/gcc-arm-none-eabi/"

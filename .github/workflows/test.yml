@@ -13,8 +13,33 @@ jobs:
     FW_build:
         runs-on: ubuntu-22.04
         steps:
-            - name: Trigger
-              run: echo "Triggered by ${{ github.event_name }} event"
+        - name: Checkout fork repo
+          uses: actions/checkout@v4
+          with:
+            repository: ${{ github.event.pull_request.head.user.login }}/${{ github.event.repository.name }}
+            ref: ${{ github.event.pull_request.head.ref }}
+      
+        - name: Poll the change
+          run: |
+            git remote add upstream https://github.com/silabs-CongD/test_build.git
+            git fetch upstream
+            git diff --name-only upstream/main HEAD > git_log.txt
+            grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > git_diff.txt
+  
+            xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
+            xargs -I{} -a git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
+  
+            if ! [ -s source_list.txt -o -s solution_list.txt ]; then
+              printf 'Skip check. No changed project found.' >> git_diff.txt
+            fi
+  
+            slcp_path=$(cat solution_list.txt)
+            base_dir="${slcp_path%/*}"
+            echo "PROJECT_BASE_DIR=$base_dir" >> $GITHUB_ENV
+  
+            # For debug
+            cat git_diff.txt
+          
             - name: Checkout
               uses: actions/checkout@v4.2.2
             - name: Install Dependencies

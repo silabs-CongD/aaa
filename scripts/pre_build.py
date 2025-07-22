@@ -2,7 +2,7 @@ import os
 import sys
 
 # Scan .slcp file path
-file = open(os.path.join(os.environ.get('GITHUB_WORKSPACE'), "git_diff.txt"), "r")
+file = open(os.path.join(os.environ.get('GITHUB_WORKSPACE'), "solution_list.txt"), "r")
 slcp_project_path_list = []
 for line in file:
 	if line.find(".slcp") != -1:
@@ -24,7 +24,7 @@ def replace_in_file(filename, old_string, new_string):
 		file.write(filedata)
 
 for slcp_file in slcp_project_path_list:
-	project_dir = os.path.dirname(slcp_project_path)
+	project_dir = os.path.dirname(slcp_file)
 	project_name = os.path.basename(project_dir)
 
 	pre_build_makefile_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), "scripts/Makefile")

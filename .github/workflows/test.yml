@@ -24,10 +24,10 @@ jobs:
               git remote add upstream https://github.com/silabs-CongD/aaa.git
               git fetch upstream
               git diff --name-only upstream/master HEAD > git_log.txt
-              grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > git_diff.txt
+              grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > ${{ github.workspace }}/git_diff.txt
     
-              xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
-              xargs -I{} -a git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
+              xargs -I{} -a ${{ github.workspace }}/git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
+              xargs -I{} -a ${{ github.workspace }}/git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
     
               if ! [ -s source_list.txt -o -s solution_list.txt ]; then
                 printf 'Skip check. No changed project found.'
@@ -39,7 +39,7 @@ jobs:
               echo "PROJECT_BASE_DIR=$base_dir" >> $GITHUB_ENV
     
               # For debug
-              cat git_diff.txt
+              cat ${{ github.workspace }}/git_diff.txt
 
 
           - name: Checkout

@@ -38,12 +38,8 @@ jobs:
             printf 'Skip check. No changed project found.' >> git_diff.txt
           fi
 
-          slcp_path=$(cat solution_list.txt)
-          base_dir="${slcp_path%/*}"
-          echo "PROJECT_BASE_DIR=$base_dir" >> $GITHUB_ENV
-
           # For debug
-          cat git_diff.txt
+          cat solution_list.txt
         
       - name: Install Dependencies
         run: |
@@ -97,7 +93,9 @@ jobs:
         run: |
           python3 scripts/pre_build.py
           cat ./Makefile
+          echo ==============================
           cat scripts/Makefile
+          echo ==============================
 
           cd ${{ github.workspace}} \
           && make all

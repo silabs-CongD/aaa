@@ -91,6 +91,8 @@ jobs:
           
           - name: Build the project
             run: |
+              ls .
+              
               python3 scripts/pre_build.py
               cat ./Makefile
               cat scripts/Makefile

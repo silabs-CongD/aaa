@@ -13,7 +13,7 @@ env:
 
 jobs:
   FW_build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Trigger
         run: echo "Triggered by ${{ github.event_name }} event"

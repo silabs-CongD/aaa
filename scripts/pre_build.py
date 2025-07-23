@@ -1,16 +1,6 @@
 import os
 import sys
 
-# Scan .slcp file path
-file = open(os.path.join(os.environ.get('GITHUB_WORKSPACE'), "solution_list.txt"), "r")
-slcp_project_path_list = []
-for line in file:
-	if line.find(".slcp") != -1:
-		slcp_project_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), line.strip())
-		slcp_project_path_list.append(slcp_project_path)
-
-
-# Add Makefile into project folder
 def replace_in_file(filename, old_string, new_string):
 	# Open the file for reading
 	with open(filename, 'r') as file:
@@ -23,24 +13,34 @@ def replace_in_file(filename, old_string, new_string):
 	with open(filename, 'w') as file:
 		file.write(filedata)
 
-for slcp_file in slcp_project_path_list:
-	project_dir = os.path.dirname(slcp_file)
-	project_name = os.path.basename(project_dir)
+def pre_build_cmake():
+	# Scan .slcp project file path
+	file = open(os.path.join(os.environ.get('GITHUB_WORKSPACE'), "solution_list.txt"), "r")
+	slcp_project_path_list = []
+	for line in file:
+		if line.find(".slcp") != -1:
+			slcp_project_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), line.strip())
+			slcp_project_path_list.append(slcp_project_path)
 
-	pre_build_makefile_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), "scripts/Makefile")
-	os.system("cp " + pre_build_makefile_path + " " + project_dir)
-	project_make_path = os.path.join(project_dir, "Makefile")
-	replace_in_file(project_make_path, 'project_name', str(project_name))
-	
-	if not os.path.isfile(os.path.join(project_dir, "Makefile")):
-		print("Error: Not found Makefile in project folder:", project_dir)
-		sys.exit(1)
+	for slcp_file in slcp_project_path_list:
+		project_dir = os.path.dirname(slcp_file)
+		project_name = os.path.basename(project_dir)
 
-	# Update root Makefile
-	file_path = os.path.join(os.environ.get('GITHUB_WORKSPACE') ,'Makefile')
-	string_to_add = "\t${MAKE} -C " + project_dir + " ${TARGET} TYPE=${TYPE}\n"
+		pre_build_makefile_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), "scripts/Makefile")
+		os.system("cp " + pre_build_makefile_path + " " + project_dir)
+		project_make_path = os.path.join(project_dir, "Makefile")
+		replace_in_file(project_make_path, 'project_name', str(project_name))
+		
+		if not os.path.isfile(os.path.join(project_dir, "Makefile")):
+			print("Error: Not found Makefile in project folder:", project_dir)
+			sys.exit(1)
 
-	with open(file_path, "a") as file:
-		file.write(string_to_add)
+		# Update root Makefile
+		file_path = os.path.join(os.environ.get('GITHUB_WORKSPACE') ,'Makefile')
+		string_to_add = "\t${MAKE} -C " + project_dir + " ${TARGET} TYPE=${TYPE}\n"
 
-	# replace_in_file(os.path.join(os.environ.get('GITHUB_WORKSPACE') ,'Makefile'), 'project_dir', str(project_dir))
+		with open(file_path, "a") as file:
+			file.write(string_to_add)
+
+if __name__ == "__main__":
+	pre_build_cmake()

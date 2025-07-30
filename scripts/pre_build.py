@@ -5,10 +5,8 @@ def replace_in_file(filename, old_string, new_string):
 	# Open the file for reading
 	with open(filename, 'r') as file:
 		filedata = file.read()
-	
 	# Replace the target string
 	filedata = filedata.replace(old_string, new_string)
-	
 	# Write the file out again
 	with open(filename, 'w') as file:
 		file.write(filedata)
@@ -29,8 +27,12 @@ def pre_build_cmake():
 		pre_build_makefile_path = os.path.join(os.environ.get('GITHUB_WORKSPACE'), "scripts/Makefile")
 		os.system("cp " + pre_build_makefile_path + " " + project_dir)
 		project_make_path = os.path.join(project_dir, "Makefile")
-		replace_in_file(project_make_path, 'project_name', str(project_name))
-		
+		# If use Simplicity Studio v6
+		if os.path.isdir(os.path.join(project_dir, "cmake_gcc")):
+			replace_in_file(project_make_path, 'project_name_cmake', str("cmake_gcc"))
+		else:
+			replace_in_file(project_make_path, 'project_name', str(project_name))
+
 		if not os.path.isfile(os.path.join(project_dir, "Makefile")):
 			print("Error: Not found Makefile in project folder:", project_dir)
 			sys.exit(1)

@@ -1,0 +1,4 @@
+C:/Users/codo/SimplicityStudio/v5_workspace/bt_soc_blinky/bt_soc_blinky_cmake/build/CMakeFiles/slc_bt_soc_blinky.dir
+C:/Users/codo/SimplicityStudio/v5_workspace/bt_soc_blinky/bt_soc_blinky_cmake/build/CMakeFiles/bt_soc_blinky.dir
+C:/Users/codo/SimplicityStudio/v5_workspace/bt_soc_blinky/bt_soc_blinky_cmake/build/CMakeFiles/edit_cache.dir
+C:/Users/codo/SimplicityStudio/v5_workspace/bt_soc_blinky/bt_soc_blinky_cmake/build/CMakeFiles/rebuild_cache.dir

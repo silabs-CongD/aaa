@@ -34,13 +34,7 @@
 #include "sl_bt_stack_init.h"
 #include "sl_component_catalog.h"
 #include "sl_bt_in_place_ota_dfu.h"
-#include "sl_gatt_service_device_information.h"
-/**
- * Internal stack function to start the Bluetooth stack.
- *
- * @return SL_STATUS_OK if the stack was successfully started
- */
-extern sl_status_t sli_bt_system_start_bluetooth();
+#include "sl_gatt_service_device_information_override.h"
 
 void sl_bt_init(void)
 {
@@ -50,13 +44,6 @@ void sl_bt_init(void)
   // which requires either DEBUG_EFM or DEBUG_EFM_USER is defined.
   sl_status_t err = sl_bt_stack_init();
   EFM_ASSERT(err == SL_STATUS_OK);
-
-  // When neither Bluetooth on-demand start feature nor an RTOS is present, the
-  // Bluetooth stack is always started already at init-time.
-#if !defined(SL_CATALOG_BLUETOOTH_ON_DEMAND_START_PRESENT) && !defined(SL_CATALOG_KERNEL_PRESENT)
-  err = sli_bt_system_start_bluetooth();
-  EFM_ASSERT(err == SL_STATUS_OK);
-#endif
 }
 
 SL_WEAK void sl_bt_on_event(sl_bt_msg_t* evt)
@@ -67,7 +54,7 @@ SL_WEAK void sl_bt_on_event(sl_bt_msg_t* evt)
 void sl_bt_process_event(sl_bt_msg_t *evt)
 {
   sl_bt_in_place_ota_dfu_on_event(evt);
-  sl_gatt_service_device_information_on_event(evt);
+  sl_gatt_service_device_information_override_on_event(evt);
   sl_bt_on_event(evt);
 }
 

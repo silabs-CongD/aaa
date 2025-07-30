@@ -1,9 +1,9 @@
 /***************************************************************************//**
  * @file
- * @brief Core application logic for Bare Metal.
+ * @brief Baremetal compatibility layer.
  *******************************************************************************
  * # License
- * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2025 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -30,15 +30,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "sl_core.h"
+#include "sl_main_init.h"
 #include "app.h"
 
-// Semaphore indicating that it is required to execute application process action.
-static uint16_t proceed_semaphore;
+// "Semaphore" indicating that it is required to execute application process action.
+static uint16_t proceed_request;
 
 // Application Runtime Init.
-void app_init_runtime(void)
+void app_init_bt(void)
 {
-  proceed_semaphore = 0;
+  proceed_request = 0;
 }
 
 // Proceed with execution.
@@ -46,8 +47,8 @@ void app_proceed(void)
 {
   CORE_DECLARE_IRQ_STATE;
   CORE_ENTER_CRITICAL();
-  if (proceed_semaphore < UINT16_MAX) {
-    proceed_semaphore++;
+  if (proceed_request < UINT16_MAX) {
+    proceed_request++;
   }
   CORE_EXIT_CRITICAL();
 }
@@ -58,10 +59,23 @@ bool app_is_process_required(void)
   bool ret = false;
   CORE_DECLARE_IRQ_STATE;
   CORE_ENTER_CRITICAL();
-  if (proceed_semaphore > 0) {
-    proceed_semaphore--;
+  if (proceed_request > 0) {
+    proceed_request--;
     ret = true;
   }
   CORE_EXIT_CRITICAL();
   return ret;
+}
+
+// Acquire access to protected variables
+bool app_mutex_acquire(void)
+{
+  // There are no tasks to protect shared resources from.
+  return true;
+}
+
+// Finish access to protected variables
+void app_mutex_release(void)
+{
+  // There are no tasks to protect shared resources from.
 }

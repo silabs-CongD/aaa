@@ -25,23 +25,28 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
     
       - name: Poll the change
+        id: check_change
         run: |
-          git remote add upstream https://github.com/silabs-CongD/aaa.git
+          git remote add upstream https://github.com/SiliconLabsSoftware/community-creations.git
           git fetch upstream
-          git diff --name-only upstream/master HEAD > git_log.txt
-          grep -v "README.md\\|.github\\|LICENSE\\|templates.xml\\|tools" git_log.txt > git_diff.txt
+          git diff --name-only upstream/main HEAD > git_log.txt
+          grep -v "scripts\\|.github\\|.gitmodules" git_log.txt > git_diff.txt
 
           xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
           xargs -I{} -a git_diff.txt find {} -type f -name "*.slcp" > solution_list.txt
 
           if ! [ -s source_list.txt -o -s solution_list.txt ]; then
-            printf 'Skip check. No changed project found.' >> git_diff.txt
+            echo "No project changes detected...........Skipped"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
           fi
+          echo "has_changes=true" >> $GITHUB_OUTPUT
 
           # For debug
           cat solution_list.txt
         
       - name: Install Dependencies
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
           sudo apt-get update && \
           sudo apt-get install --no-install-recommends -y \
@@ -64,6 +69,7 @@ jobs:
           libpcre2-dev
 
       - name: CMake 3.25.4
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
           wget https://github.com/Kitware/CMake/releases/download/v3.25.3/cmake-3.25.3-linux-${{ env.ARCH }}.sh \
           -q -O /tmp/cmake-install.sh \
@@ -74,6 +80,7 @@ jobs:
           && ln -sf /opt/cmake-3.25.3/bin/* /usr/local/bin
       
       - name: Install GNU Arm Embedded Toolchain
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
           cd /tmp/ \
           && wget ${{ env.ARM_GCC_URL }} \
@@ -82,6 +89,7 @@ jobs:
           && rm arm-gnu-toolchain-12.2.rel-${{ env.ARCH }}-arm-none-eabi -rf
       
       - name: Simplicity Commander
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
           wget https://www.silabs.com/documents/login/software/SimplicityCommander-Linux.zip \
           && unzip SimplicityCommander-Linux.zip \
@@ -90,11 +98,10 @@ jobs:
           && rm -rf SimplicityCommander-Linux.zip SimplicityCommander-Linux
       
       - name: Build the project
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
           python3 scripts/pre_build.py
           cat ./Makefile
-          echo ==============================
-          cat scripts/Makefile
           echo ==============================
 
           cd ${{ github.workspace}} \

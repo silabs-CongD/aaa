@@ -27,9 +27,9 @@ jobs:
       - name: Poll the change
         id: check_change
         run: |
-          git remote add upstream https://github.com/SiliconLabsSoftware/community-creations.git
+          git remote add upstream https://github.com/silabs-CongD/aaa.git
           git fetch upstream
-          git diff --name-only upstream/main HEAD > git_log.txt
+          git diff --name-only upstream/master HEAD > git_log.txt
           grep -v "scripts\\|.github\\|.gitmodules" git_log.txt > git_diff.txt
 
           xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt

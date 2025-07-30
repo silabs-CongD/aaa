@@ -1,7 +1,7 @@
 .SUFFIXES:				# ignore builtin rules
 .PHONY: clean configure build clean_build
 
-TYPE ?= Debug #Release
+TYPE ?= Release
 
 clean_build: clean configure build
 

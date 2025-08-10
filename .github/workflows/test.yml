@@ -107,7 +107,9 @@ jobs:
       #     python3 scripts/pre_build.py
       #     cat ./Makefile
       #     echo ==============================
-
+      #     cd ${{ github.workspace}} \
+      #     && make all
+          
       - name: Generate a review from check statuses
         run: |
           if [[ $CHECK_README == success && $CHECK_CODING == success && $CHECK_BUILD_FW == success && $CHECK_SONARQUBE == success ]]; then
@@ -119,7 +121,4 @@ jobs:
             https://api.github.com/repos/SiliconLabsSoftware/${{ github.event.repository.name }}/pulls/${{ github.event.pull_request.number }}/reviews \
             -d '{"commit_id":"${{ github.sha }}", "body":"Some checks were not successful!", "event":"REQUEST_CHANGES"}'
 
-          
-
-          cd ${{ github.workspace}} \
-          && make all
+        

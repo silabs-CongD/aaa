@@ -15,6 +15,7 @@ jobs:
       - name: install flake8
         run: |
           pip install flake8
+          pip install black
 
       - name: checkout
         run: |
@@ -36,9 +37,24 @@ jobs:
           
       - name: run flake8
         run: |
+          cd projects
           while IFS= read -r line; do
             echo ==========================================
             echo "Checking code convention for: $line"
             flake8 $line
           done < projects/changed_projects_folder.txt
           
+      - name: auto fix
+        run: |
+          cd projects
+          while IFS= read -r line; do
+            echo ==========================================
+            echo "Fixing code convention for: $line"
+            black $line
+          done < projects/changed_projects_folder.txt
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto_fixed
+          path: projects

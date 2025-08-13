@@ -35,16 +35,7 @@ jobs:
 
           echo =================
           cat changed_projects_folder.txt
-          
-      - name: run flake8
-        run: |
-          cd projects
-          while IFS= read -r line; do
-            echo ==========================================
-            echo "Checking code convention for: $line"
-            flake8 $line
-          done < changed_projects_folder.txt
-          
+
       - name: auto fix
         run: |
           cd projects
@@ -61,3 +52,13 @@ jobs:
         with:
           name: auto_fixed
           path: projects
+          
+      - name: run flake8
+        run: |
+          cd projects
+          while IFS= read -r line; do
+            echo ==========================================
+            echo "Checking code convention for: $line"
+            flake8 $line
+          done < changed_projects_folder.txt
+          

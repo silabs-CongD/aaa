@@ -109,10 +109,17 @@ jobs:
       #     echo ==============================
       #     cd ${{ github.workspace}} \
       #     && make all
-          
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+        
       - name: Generate a review from check statuses
         run: |
-            curl -X POST -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            curl -X POST -H "Authorization: token ${{ steps.app-token.outputs.token }}" \
               -d '{"event":"APPROVE"}' \
               https://api.github.com/repos/SiliconLabsSoftware/${{ github.event.repository.name }}/pulls/${{ github.event.pull_request.number }}/reviews
           # else

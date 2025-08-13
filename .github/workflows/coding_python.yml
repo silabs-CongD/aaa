@@ -54,13 +54,13 @@ jobs:
           name: git_patch
           path: projects/patch.diff
           
-      - name: run flake8
+      - name: run black check
         run: |
           cd projects
           while IFS= read -r line; do
             echo ==========================================
             echo "Checking code convention for: $line"
-            flake8 $line >> ${{ github.workspace }}/flake8_log.txt
+            black --check $line >> ${{ github.workspace }}/flake8_log.txt
           done < ${{ github.workspace }}/changed_projects_folder.txt
         continue-on-error: true
 
@@ -70,6 +70,8 @@ jobs:
             echo "Success check code convention"
           else
             echo "Failure check code convention"
+            cat ${{ github.workspace }}/flake8_log.txt
+            echo ======================================
             echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
             exit 1
           

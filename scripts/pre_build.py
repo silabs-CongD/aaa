@@ -3,7 +3,7 @@ import sys
 
 
 def replace_in_file(filename, old_string, new_string):
-    # Open the file for reading
+    # Open the file for reading ttt
     with open(filename, 'r') as file:
         filedata = file.read()
     # Replace the target string

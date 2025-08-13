@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 def replace_in_file(filename, old_string, new_string):
 	# Open the file for reading
 	with open(filename, 'r') as file:
@@ -10,6 +11,7 @@ def replace_in_file(filename, old_string, new_string):
 	# Write the file out again
 	with open(filename, 'w') as file:
 		file.write(filedata)
+
 
 def pre_build_cmake():
 	# Scan .slcp project file path
@@ -43,6 +45,7 @@ def pre_build_cmake():
 
 		with open(file_path, "a") as file:
 			file.write(string_to_add)
+
 
 if __name__ == "__main__":
 	pre_build_cmake()

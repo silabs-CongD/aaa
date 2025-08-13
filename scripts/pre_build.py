@@ -21,7 +21,7 @@ def pre_build_cmake():
     for line in file:
         if line.find(".slcp") != -1:
             slcp_project = os.path.join(os.environ.get('GITHUB_WORKSPACE'),
-                                             line.strip())
+                                        line.strip())
             slcp_project_path_list.append(slcp_project)
 
     for slcp_file in slcp_project_path_list:
@@ -29,7 +29,7 @@ def pre_build_cmake():
         project_name = os.path.basename(project_dir)
 
         pre_build_makefile = os.path.join(os.environ.get('GITHUB_WORKSPACE'),
-                                               "scripts/Makefile")
+                                        "scripts/Makefile")
         os.system("cp " + pre_build_makefile + " " + project_dir)
         project_make_path = os.path.join(project_dir, "Makefile")
         # If use Simplicity Studio v6

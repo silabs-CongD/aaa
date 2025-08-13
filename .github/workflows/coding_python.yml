@@ -68,15 +68,13 @@ jobs:
             echo "Checking code convention for: $line"
             black --check --diff $line
           done < ${{ github.workspace }}/changed_projects_folder.txt
-
-          # git diff-index --quiet HEAD
-          # if [ $? -eq 1 ]
-          # then
-          #   echo "Failure check code convention"
-          #   echo ======================================
-          #   echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
-          #   exit 1
-          # else
-          #   echo "Success check code convention"
-          # fi
+          
+          if ! git diff --quiet; then
+            echo "Failure check code convention"
+            echo ======================================
+            echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
+            exit 1
+          else
+            echo "Success check code convention"
+          fi
 

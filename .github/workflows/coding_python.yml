@@ -1,7 +1,7 @@
 name: code
 
 on: 
-  push:
+  pull_request:
 
 jobs:
   code:
@@ -9,9 +9,33 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          path: projects
 
-      - name: run flake8
+      - name: install flake8
         run: |
           pip install flake8
 
-          flake8 .
+      - name: checkout
+        run: |
+          cd projects
+
+          base_ref=${{ github.base_ref }}
+          pr_number=${{ github.event.pull_request.number }}
+          head_sha=${{ github.event.pull_request.head.sha }}
+          base_sha=${{ github.event.pull_request.base.sha  }}
+          
+          git fetch origin $base_ref:base_ref
+          git fetch origin pull/$pr_number/head:pr_ref
+          git checkout $head_sha
+          git diff $base_sha $head_sha --diff-filter=ACMR --name-only > git_diff.txt
+          cat git_diff.txt | grep '/' | cut -d'/' -f1 | sort | uniq |  sed -e '/deprecated/d' -e '/.github/d' > changed_projects_folder.txt
+        
+      - name: run flake8
+        run: |
+          while IFS= read -r line; do
+            echo ==========================================
+            echo "Checking code convention for: $line"
+            flake8 $line
+          done < projects/changed_projects_folder.txt
+          

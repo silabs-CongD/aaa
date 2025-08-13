@@ -121,10 +121,4 @@ jobs:
         run: |
             curl -X POST -H "Authorization: token ${{ steps.app-token.outputs.token }}" \
               -d '{"event":"APPROVE"}' \
-              https://api.github.com/repos/SiliconLabsSoftware/${{ github.event.repository.name }}/pulls/${{ github.event.pull_request.number }}/reviews
-          # else
-          #   curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ steps.aep-app-token.outputs.token }}" \
-          #   https://api.github.com/repos/SiliconLabsSoftware/${{ github.event.repository.name }}/pulls/${{ github.event.pull_request.number }}/reviews \
-          #   -d '{"commit_id":"${{ github.sha }}", "body":"Some checks were not successful!", "event":"REQUEST_CHANGES"}'
-
-
+              https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/${{ github.event.pull_request.number }}/reviews

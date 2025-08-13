@@ -43,7 +43,7 @@ jobs:
             echo ==========================================
             echo "Checking code convention for: $line"
             flake8 $line
-          done < projects/changed_projects_folder.txt
+          done < changed_projects_folder.txt
           
       - name: auto fix
         run: |
@@ -52,7 +52,9 @@ jobs:
             echo ==========================================
             echo "Fixing code convention for: $line"
             black $line
-          done < projects/changed_projects_folder.txt
+          done < changed_projects_folder.txt
+
+          git clean -xdf
 
       - name: Upload Result
         uses: actions/upload-artifact@v4

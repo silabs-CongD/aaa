@@ -30,11 +30,11 @@ jobs:
           git fetch origin $base_ref:base_ref
           git fetch origin pull/$pr_number/head:pr_ref
           git checkout $head_sha
-          git diff $base_sha $head_sha --diff-filter=ACMR --name-only > git_diff.txt
-          cat git_diff.txt | grep '/' | cut -d'/' -f1 | sort | uniq |  sed -e '/deprecated/d' -e '/.github/d' > changed_projects_folder.txt
+          git diff $base_sha $head_sha --diff-filter=ACMR --name-only > ${{ github.workspace }}/git_diff.txt
+          cat ${{ github.workspace }}/git_diff.txt | grep '/' | cut -d'/' -f1 | sort | uniq |  sed -e '/deprecated/d' -e '/.github/d' > ${{ github.workspace }}/changed_projects_folder.txt
 
           echo =================
-          cat changed_projects_folder.txt
+          cat ${{ github.workspace }}/changed_projects_folder.txt
 
       - name: auto fix
         run: |
@@ -43,9 +43,7 @@ jobs:
             echo ==========================================
             echo "Fixing code convention for: $line"
             black $line
-          done < changed_projects_folder.txt
-
-          git clean -xdf
+          done < ${{ github.workspace }}/changed_projects_folder.txt
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
@@ -60,5 +58,5 @@ jobs:
             echo ==========================================
             echo "Checking code convention for: $line"
             flake8 $line
-          done < changed_projects_folder.txt
+          done < ${{ github.workspace }}/changed_projects_folder.txt
           

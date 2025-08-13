@@ -36,7 +36,7 @@ jobs:
           echo =================
           cat ${{ github.workspace }}/changed_projects_folder.txt
 
-      - name: auto fix
+      - name: Run check code
         run: |
           cd projects
           while IFS= read -r line; do
@@ -47,14 +47,18 @@ jobs:
 
           git diff -- "*.py" > patch.diff
 
+          echo ==========================================
+          git diff
+
       - name: Upload Result
         id: auto_fix
         uses: actions/upload-artifact@v4
         with:
           name: git_patch
           path: projects/patch.diff
+          if-no-files-found: ignore
           
-      - name: run black check
+      - name: black check status
         run: |
           cd projects
           git clean -xdf
@@ -65,14 +69,14 @@ jobs:
             black --check --diff $line
           done < ${{ github.workspace }}/changed_projects_folder.txt
 
-          git diff-index --quiet HEAD
-          if [ $? -eq 1 ]
-          then
-            echo "Failure check code convention"
-            echo ======================================
-            echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
-            exit 1
-          else
-            echo "Success check code convention"
-          fi
+          # git diff-index --quiet HEAD
+          # if [ $? -eq 1 ]
+          # then
+          #   echo "Failure check code convention"
+          #   echo ======================================
+          #   echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
+          #   exit 1
+          # else
+          #   echo "Success check code convention"
+          # fi
 

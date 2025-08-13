@@ -62,19 +62,17 @@ jobs:
           while IFS= read -r line; do
             echo ==========================================
             echo "Checking code convention for: $line"
-            black --check $line >> ${{ github.workspace }}/black_log.txt
+            black --check --diff $line
           done < ${{ github.workspace }}/changed_projects_folder.txt
-        continue-on-error: true
 
-      - name: Check status
-        run: |
-          if [ -s "${{ github.workspace }}/black_log.txt" ]; then
-            echo "Success check code convention"
-          else
+          git diff-index --quiet HEAD
+          if [ $? -eq 1 ]
+          then
             echo "Failure check code convention"
-            cat ${{ github.workspace }}/black_log.txt
             echo ======================================
             echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
             exit 1
+          else
+            echo "Success check code convention"
           fi
-          
+

@@ -1,7 +1,8 @@
 name: code
 
 on: 
-  pull_request:
+  pull_request_target:
+      types: [opened, synchronize, edited]
 
 jobs:
   code:
@@ -15,8 +16,9 @@ jobs:
       - name: install flake8
         run: |
           pip install flake8
+          pip install black
 
-      - name: checkout
+      - name: check the change
         run: |
           cd projects
 
@@ -28,17 +30,51 @@ jobs:
           git fetch origin $base_ref:base_ref
           git fetch origin pull/$pr_number/head:pr_ref
           git checkout $head_sha
-          git diff $base_sha $head_sha --diff-filter=ACMR --name-only > git_diff.txt
-          cat git_diff.txt | grep '/' | cut -d'/' -f1 | sort | uniq |  sed -e '/deprecated/d' -e '/.github/d' > changed_projects_folder.txt
+          git diff $base_sha $head_sha --diff-filter=ACMR --name-only > ${{ github.workspace }}/git_diff.txt
+          cat ${{ github.workspace }}/git_diff.txt | grep '/' | cut -d'/' -f1 | sort | uniq |  sed -e '/deprecated/d' -e '/.github/d' > ${{ github.workspace }}/changed_projects_folder.txt
 
           echo =================
-          cat changed_projects_folder.txt
-          
-      - name: run flake8
+          cat ${{ github.workspace }}/changed_projects_folder.txt
+
+      - name: Run check code
         run: |
+          cd projects
+          while IFS= read -r line; do
+            echo ==========================================
+            echo "Fixing code convention for: $line"
+            black $line
+          done < ${{ github.workspace }}/changed_projects_folder.txt
+
+          git diff -- "*.py" > patch.diff
+
+          echo ==========================================
+          git diff
+
+      - name: Upload Result
+        id: auto_fix
+        uses: actions/upload-artifact@v4
+        with:
+          name: git_patch
+          path: projects/patch.diff
+          if-no-files-found: ignore
+          
+      - name: black check status
+        run: |
+          cd projects
+          git clean -xdf
+          
           while IFS= read -r line; do
             echo ==========================================
             echo "Checking code convention for: $line"
-            flake8 $line
-          done < projects/changed_projects_folder.txt
+            black --check --diff $line
+          done < ${{ github.workspace }}/changed_projects_folder.txt
           
+          if ! git diff --quiet; then
+            echo "Failure check code convention"
+            echo ======================================
+            echo "Download auto-fix package here: ${{ steps.auto_fix.outputs.artifact-url }}"
+            exit 1
+          else
+            echo "Success check code convention"
+          fi
+

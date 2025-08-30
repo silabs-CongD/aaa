@@ -51,8 +51,8 @@ def pre_build_cmake():
         # Update root Makefile
         file_path = os.path.join(os.environ.get("GITHUB_WORKSPACE"), "Makefile")
         string_to_add = "\t${MAKE} -C " + project_dir + " ${TARGET} TYPE=${TYPE}\n"
-        string_to_add = "\t@echo ===========================================================\n"
-        string_to_add = "\t@echo ===========================================================\n"
+        # string_to_add = "\t@echo ===========================================================\n"
+        # string_to_add = "\t@echo ===========================================================\n"
 
         with open(file_path, "a") as file:
             file.write(string_to_add)

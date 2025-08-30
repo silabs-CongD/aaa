@@ -35,8 +35,8 @@ def got_simplicity_sdk(slcp_file):
 						'sisdk_' + str(simplicity_sdk_version) ,
 						branch = str(simplicity_sdk_version)
 						)
-						os.system(slc_cli_Path + " configuration --sdk ", sdk_dir)
-						os.system(slc_cli_Path + " signature trust --sdk ", sdk_dir)
+						os.system(slc_cli_Path + " configuration --sdk " + sdk_dir)
+						os.system(slc_cli_Path + " signature trust --sdk " + sdk_dir)
 
 					return simplicity_sdk_version
 
@@ -127,7 +127,7 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 	extension_folder = extension + "_" + str(extension_version)
 	sdk_extension_dir = os.path.join(sdk_dir, "extension", extension_folder)
 	if os.path.isdir(sdk_extension_dir) == False:
-		os.system(slc_path + " configuration --sdk ", sdk_dir)
+		os.system(slc_path + " configuration --sdk " + sdk_dir)
 		os.system("mkdir -p " + os.path.join(sdk_dir, "extension"))
 		os.system("cp -R " + os.path.join(GetWorkspacePath(), extension_folder) + " " + os.path.join(sdk_dir, "extension"))
 		os.system(slc_path + " signature trust -extpath " + sdk_extension_dir)

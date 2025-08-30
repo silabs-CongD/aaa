@@ -1,6 +1,8 @@
-
+import sys
 import os
 import re
+import subprocess
+import time
 from git import Repo
 
 def GetWorkspacePath():
@@ -15,6 +17,14 @@ def GetSlcPath():
 	path = os.environ.get('SL_SLC_PATH')
 	if path == None:
 		print('Environment variable SL_SLC_PATH not set.')
+		os.sys.exit(1)
+	
+	return path
+
+def GetARMGCCPath():
+	path = os.environ.get('ARM_GCC_DIR')
+	if path == None:
+		print('Environment variable ARM_GCC_DIR not set.')
 		os.sys.exit(1)
 	
 	return path
@@ -133,7 +143,80 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 		os.system(slc_path + " signature trust -extpath " + sdk_extension_dir)
 
 
+def checkSlcpGCC(makefile):
+	print ( 'GNU ARM Embedded: Checking ' + makefile )
+	ARMGCCPath = GetARMGCCPath()
+	ARMGCCBuild = [
+		'make',
+		'TOOLDIR={}'.format(ARMGCCPath)
+	]
 
+	commandline = ARMGCCBuild + [
+		'-f',
+		os.path.basename(makefile),
+		'clean'
+	]
+	ret = buildTarget(os.path.dirname(makefile), commandline, "GNU ARM Embedded")
+	if ret != 0:
+		print('GNU ARM Embedded: Error cleaning ', makefile)
+		os.sys.exit(1)
+
+	# Build
+	config = 'release'
+	commandline = ARMGCCBuild + [
+		config,
+		# '-j',
+		'-f',
+		os.path.basename(makefile)
+	]
+
+	commandline.append('CFLAGS=-Wall -Wextra -Werror -Wa,--fatal-warnings')
+	commandline.append('CXXFLAGS=-Wall -Wextra -Werror -Wa,--fatal-warnings')
+	commandline.append('ASMFLAGS=-Wall -Wextra -Werror')
+	commandline.append('LDFLAGS=-Wl,--fatal-warnings')
+
+	ret = buildTarget(os.path.dirname(makefile), commandline, "GNU ARM Embedded")
+	sys.stdout.flush()
+
+	if ret != 0:
+		print('GNU ARM Embedded: Error building ({}) \n'.format(makefile)) 
+	else:
+		print('GNU ARM Embedded: SUCCESS ({}) \n'.format(makefile)) 
+				
+def buildTarget(builddir, commandline, messagecontext=None):
+	if messagecontext != None:
+		print ( messagecontext + '> ' + ' '.join(commandline) )
+	start = time.time()
+	build = subprocess.Popen(commandline, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	output,err = build.communicate()
+	output = output.decode('utf-8', 'ignore')
+	err = err.decode('utf-8', 'ignore')
+	print(output)
+	print("Elapsed Time [Building or Make-cleaning]: {0:.2f} sec".format(time.time()-start))
+
+	if build.returncode != 0:
+		print("process return code {}".format(build.returncode))
+		# Sometime these examples are not procuding errors but return code still != 0
+		if (output.find('Build Finished') != -1 and output.find('error:') == -1):
+			build.returncode = 0
+		if not err:
+			# Some toolchains don't use stderr for error output, return stdout instead
+			err = output
+		print(err, file=sys.stderr)
+
+	if (build.returncode == 0 and ((output.find('Warning:') != -1) or (output.find('warning:') != -1))):
+		# Check warning come from sdk or author
+		for item in output.split("\n"):
+			if (item.find('warning:') != -1 and item.find('autogen/') == -1 and item.find('gecko_sdk_') == -1 and item.find('sdks') == -1 and item.find('wiseconnect3_sdk') == -1):
+				build.returncode = 1
+				err = output
+				print(err, file=sys.stderr)
+				break
+
+	if build.returncode != 0:
+		sys.exit(build.returncode)
+
+	return build.returncode
 
 
 
@@ -177,44 +260,20 @@ def build_slcp_project(slcp_file):
 	workspace = os.path.join(GetWorkspacePath(), "ws")
 	project_name = os.path.basename(slcp_file).replace(".slcp", "")
 
-	os.system(slc_cli_Path + " slc configuration --gcc-toolchain " + os.environ.get("ARM_GCC_DIR"))
+	os.system(slc_cli_Path + " configuration --gcc-toolchain " + os.environ.get("ARM_GCC_DIR"))
 	if (wiseconnect3_sdk_version != None):
 		os.system(slc_cli_Path + " generate --force " + slcp_file + " -cp -np -d " + workspace + " -name={}".format(project_name) + " --with " + '"{};wiseconnect3_sdk"'.format(board_id))
 	else:				
 		os.system(slc_cli_Path + " generate --force " + slcp_file + " -cp -np -d " + workspace + " -name={}".format(project_name) + " --with=" + board_id)	
 
 	project_mak = workspace + '/{}.Makefile'.format(project_name)
-	os.system("cd " + workspace + " && make -f " + project_mak)
+	checkSlcpGCC(project_mak)
+	# os.system("cd " + workspace + " && make -f " + project_mak)
+
+	# Check build result
 
 
 ###################
-def test():
-	# slcp_file = "D:/aaa/will_del/fork_aaa/projects/bluetooth/bluetooth_applications/gw/wifi/wifi_ble_gateway/wifi_ble_gateway.slcp"
-	slcp_file = "C:/Users/codo/SimplicityStudio/v6_workspace_130/empty/empty.slcp"
-	simplicity_sdk_version = got_simplicity_sdk(slcp_file)
-	if simplicity_sdk_version == None:
-		print("Error: Could not found sdk version on {}.slcp project".format(slcp_file))
-		os.sys.exit(1)
-	print("simplicity_sdk version is:", simplicity_sdk_version)	
-	
-	wiseconnect3_sdk_version = got_wiseconnect3_sdk(slcp_file)
-	if wiseconnect3_sdk_version:
-		# add_sdk_extension(sdk_dir, "wiseconnect" , wiseconnect3_sdk_version)
-		print("wiseconnect3_sdk version is:", wiseconnect3_sdk_version)	
-	aiml_ext_version = got_aiml_extension(slcp_file)
-	if aiml_ext_version:
-		# add_sdk_extension(sdk_dir, "aiml_extension" , aiml_ext_version)
-		print("aiml_extension version is:", aiml_ext_version)
-
-	matter_ext_version = got_matter_extension(slcp_file)
-	if matter_ext_version:
-		# add_sdk_extension(sdk_dir, "matter_extension" , matter_ext_version)
-		print("matter_extension version is:", matter_ext_version)
-
-	board_id = got_board_id(slcp_file)
-	print("board_id is:", board_id)
-	print("\n\n")
-
 if __name__ == "__main__":
 	# Scan .slcp project file in git change log
 	file = open(

@@ -3,11 +3,11 @@ import sys
 
 
 def replace_in_file(filename, old_string, new_string):
-    # Open the file for reading
     with open(filename, "r") as file:
         filedata = file.read()
     # Replace the target string
     filedata = filedata.replace(old_string, new_string)
+    
     # Write the file out again
     with open(filename, "w") as file:
         file.write(filedata)
@@ -29,6 +29,8 @@ def pre_build_cmake():
     for slcp_file in slcp_project_path_list:
         project_dir = os.path.dirname(slcp_file)
         project_name = os.path.basename(project_dir)
+        print(50*"*")
+        print("Project directory:", project_dir)
 
         pre_build_makefile = os.path.join(
             os.environ.get("GITHUB_WORKSPACE"), "scripts/Makefile"
@@ -37,6 +39,7 @@ def pre_build_cmake():
         project_make_path = os.path.join(project_dir, "Makefile")
         # If use Simplicity Studio v6
         if os.path.isdir(os.path.join(project_dir, "cmake_gcc")):
+            print("Buiding for Studio 6")
             replace_in_file(project_make_path, "project_name_cmake", str("cmake_gcc"))
         else:
             replace_in_file(project_make_path, "project_name", str(project_name))

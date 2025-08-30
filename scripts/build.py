@@ -29,7 +29,7 @@ def got_simplicity_sdk(slcp_file):
 					simplicity_sdk_version = "v" + regex[0]
 					# Check existing and clone
 					sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_" +  simplicity_sdk_version)
-					if os.path.isdir(sdk_dir):
+					if not os.path.isdir(sdk_dir):
 						repo = Repo.clone_from(
 						'https://github.com/SiliconLabs/simplicity_sdk.git',
 						'sisdk_' + str(simplicity_sdk_version) ,
@@ -138,8 +138,6 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 
 
 def build_slcp_project(slcp_file):
-	print(100*"*")
-	print("Building for:", slcp_file)
 	print("Project Build ENV:")
 
 	slc_cli_Path = GetSlcPath()
@@ -230,4 +228,6 @@ if __name__ == "__main__":
 			slcp_project_path_list.append(slcp_project)
 
 	for slcp_file in slcp_project_path_list:
+		print(100*"*")
+		print("Building for:", slcp_file)		
 		build_slcp_project(slcp_file)

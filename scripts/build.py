@@ -25,7 +25,7 @@ def got_simplicity_sdk(slcp_file):
 			if line.find("id: simplicity_sdk") != -1:
 				regex = re.findall(r"([\d\.]+)", line)
 				if regex:
-					simplicity_sdk_version = "v" + regex.group(1)
+					simplicity_sdk_version = "v" + regex[1]
 					
 					# Check existing and clone
 					if os.path.isdir(os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)):
@@ -103,15 +103,15 @@ def got_aiml_extension(slcp_file):
 			if line.find("id: aiml") != -1:
 				regex = re.findall(r"([\d\.]+)", line)
 				if regex:
-					tphd_ext_version = "v" + regex[1]
+					aiml_ext_version = "v" + regex[1]
 					
-					if os.path.isdir(os.path.join(GetWorkspacePath(), "aiml_extension_" + str(tphd_ext_version))) == False:
+					if os.path.isdir(os.path.join(GetWorkspacePath(), "aiml_extension_" + str(aiml_ext_version))) == False:
 						repo = Repo.clone_from(
 						'https://github.com/SiliconLabsSoftware/aiml-extension.git',
-						'aiml_extension_' + str(tphd_ext_version) ,
-						branch = str(tphd_ext_version)
+						'aiml_extension_' + str(aiml_ext_version) ,
+						branch = str(aiml_ext_version)
 						)
-					return tphd_ext_version
+					return aiml_ext_version
 
 
 
@@ -131,23 +131,39 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 
 
 def build_slcp_project(slcp_file):
+	print(100*"*")
+	print("Building for:", slcp_file)
+	print("Project Build ENV:")
+
 	slc_cli_Path = GetSlcPath()
 	simplicity_sdk_version = got_simplicity_sdk(slcp_file)
 	if simplicity_sdk_version == None:
 		print("Error: Could not found sdk version on {}.slcp project".format(slcp_file))
 		os.sys.exit(1)
-	sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)
-
-	print(100*"*")
-	print("Project Build ENV:")
 	print("simplicity_sdk version is:", simplicity_sdk_version)
+	
+	sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)
 
 	wiseconnect3_sdk_version = got_wiseconnect3_sdk(slcp_file)
 	if wiseconnect3_sdk_version:
 		add_sdk_extension(sdk_dir, "wiseconnect" , wiseconnect3_sdk_version)
 		print("wiseconnect3_sdk version is:", wiseconnect3_sdk_version)
 	
-	
+	matter_ext_version = got_matter_extension(slcp_file)
+	if matter_ext_version:
+		add_sdk_extension(sdk_dir, "matter_extension" , matter_ext_version)
+		print("matter_extension version is:", matter_ext_version)
+
+	tphd_ext_version = got_tphd_extension(slcp_file)
+	if tphd_ext_version:
+		add_sdk_extension(sdk_dir, "tphd_extension" , tphd_ext_version)
+		print("tphd_extension version is:", tphd_ext_version)
+
+	aiml_ext_version = got_aiml_extension(slcp_file)
+	if aiml_ext_version:
+		add_sdk_extension(sdk_dir, "aiml_extension" , aiml_ext_version)
+		print("aiml_extension version is:", aiml_ext_version)
+
 	board_id = got_board_id(slcp_file)
 	print("board_id is:", board_id)
 	print("\n\n")

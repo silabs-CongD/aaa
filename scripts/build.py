@@ -177,6 +177,7 @@ def build_slcp_project(slcp_file):
 	workspace = os.path.join(GetWorkspacePath(), "ws")
 	project_name = os.path.basename(slcp_file).replace(".slcp", "")
 
+	os.system(slc_cli_Path + " slc configuration --gcc-toolchain " + os.environ.get("ARM_GCC_DIR"))
 	if (wiseconnect3_sdk_version != None):
 		os.system(slc_cli_Path + " generate --force " + slcp_file + " -cp -np -d " + workspace + " -name={}".format(project_name) + " --with " + '"{};wiseconnect3_sdk"'.format(board_id))
 	else:				

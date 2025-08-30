@@ -118,11 +118,9 @@ jobs:
           mkdir ${{ github.workspace }}/ws
           python3 scripts/build.py
 
-          echo 11111
-          ls ${{ github.workspace }}/ws
-
-          echo 22222
+          printf '%*s\n' 100 '' | tr ' ' '*'
           cat ${{ github.workspace}}/Makefile
+          printf '%*s\n' 100 '' | tr ' ' '*'
           
           cd ${{ github.workspace}} \
           && make all          

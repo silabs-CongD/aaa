@@ -121,6 +121,9 @@ jobs:
           echo 11111
           ls ${{ github.workspace }}/ws
 
+          echo 22222
+          cat ${{ github.workspace}}/Makefile
+          
           cd ${{ github.workspace}} \
           && make all          
 

@@ -169,8 +169,8 @@ def pre_build_cmake(project_name, cmake_dir):
 
 	# for slcp_file in slcp_project_path_list:
 		project_dir = os.path.dirname(cmake_dir)
-		# print(80*"*")
-		# print("Project directory:", project_dir)
+		print(80*"*")
+		print("Project directory:", project_dir)
 
 		pre_build_makefile = os.path.join(
 			os.environ.get("GITHUB_WORKSPACE"), "scripts/Makefile"
@@ -191,8 +191,8 @@ def pre_build_cmake(project_name, cmake_dir):
 		# Update root Makefile
 		file_path = os.path.join(os.environ.get("GITHUB_WORKSPACE"), "Makefile")
 		string_to_add = "\t${MAKE} -C " + project_dir + " ${TARGET} TYPE=${TYPE}\n"
-		string_to_add = "\t@echo ===========================================================\n"
-		string_to_add = "\t@echo ===========================================================\n"
+		# string_to_add = "\t@echo ===========================================================\n"
+		# string_to_add = "\t@echo ===========================================================\n"
 
 		with open(file_path, "a") as file:
 			file.write(string_to_add)

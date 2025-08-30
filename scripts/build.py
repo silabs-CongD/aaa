@@ -126,7 +126,7 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 	sdk_extension_dir = os.path.join(sdk_dir, "extension", extension_folder)
 	if os.path.isdir(sdk_extension_dir) == False:
 		os.system("mkdir -p " + os.path.join(sdk_dir, "extension"))
-		os.system("cp -R " + os.path.join(os.environ.get("WORKSPACE"), extension_folder) + " " + os.path.join(sdk_dir, "extension"))
+		os.system("cp -R " + os.path.join(GetWorkspacePath(), extension_folder) + " " + os.path.join(sdk_dir, "extension"))
 		os.system(slc_path + " signature trust -extpath " + sdk_extension_dir)
 
 

@@ -101,9 +101,13 @@ jobs:
       - name: Build the project
         if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
+          mkdir ${{ github.workspace }}/ws
           python3 scripts/build.py
 
-
+          echo 11111
+          ls ${{ github.workspace }}
+          echo 2222
+          ls ${{ github.workspace }}/ws
       # - name: Create GitHub App Token
       #   id: app-token
       #   uses: actions/create-github-app-token@v2

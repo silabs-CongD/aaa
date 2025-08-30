@@ -20,20 +20,23 @@ def GetSlcPath():
 	return path
 
 def got_simplicity_sdk(slcp_file):
+	slc_cli_Path = GetSlcPath()
 	with open(slcp_file, "r") as f:
 		for line in f:
 			if line.find("id: simplicity_sdk") != -1:
 				regex = re.findall(r"([\d\.]+)", line)
 				if regex:
 					simplicity_sdk_version = "v" + regex[0]
-					
 					# Check existing and clone
-					if os.path.isdir(os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)):
+					sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)
+					if os.path.isdir(sdk_dir):
 						repo = Repo.clone_from(
 						'https://github.com/SiliconLabs/simplicity_sdk.git',
 						'sisdk_' + str(simplicity_sdk_version) ,
 						branch = str(simplicity_sdk_version)
 						)
+						os.system(slc_cli_Path + " configuration --sdk ", sdk_dir)
+						os.system(slc_cli_Path + " signature trust --sdk ", sdk_dir)
 
 					return simplicity_sdk_version
 
@@ -52,7 +55,6 @@ def got_wiseconnect3_sdk(slcp_file):
 	with open(slcp_file, "r") as f:
 		for line in f:
 			if line.find("id: wiseconnect3_sdk") != -1:
-				print(line)
 				regex = re.findall(r"([\d\.]+)", line)
 				if regex:
 					wiseconnect3_sdk_version = "v" + regex[1]
@@ -125,6 +127,7 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 	extension_folder = extension + "_" + str(extension_version)
 	sdk_extension_dir = os.path.join(sdk_dir, "extension", extension_folder)
 	if os.path.isdir(sdk_extension_dir) == False:
+		os.system("slc configuration --sdk ", sdk_dir)
 		os.system("mkdir -p " + os.path.join(sdk_dir, "extension"))
 		os.system("cp -R " + os.path.join(GetWorkspacePath(), extension_folder) + " " + os.path.join(sdk_dir, "extension"))
 		os.system(slc_path + " signature trust -extpath " + sdk_extension_dir)

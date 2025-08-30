@@ -60,6 +60,9 @@ jobs:
           curl \
           python3-pip \
           wget \
+          build-essential \
+          ninja-build \
+          make \
           zip \
           unzip \
           libgl1 \
@@ -97,7 +100,18 @@ jobs:
           && tar -xf arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi.tar.xz \
           && mv arm-gnu-toolchain-12.2.rel1-${{ env.ARCH }}-arm-none-eabi /opt/gcc-arm-none-eabi \
           && rm arm-gnu-toolchain-12.2.rel-${{ env.ARCH }}-arm-none-eabi -rf
-      
+
+      - name: CMake 3.25.4
+        if: ${{ steps.check_change.outputs.has_changes == 'true' }}
+        run: |
+          wget https://github.com/Kitware/CMake/releases/download/v3.25.3/cmake-3.25.3-linux-${{ env.ARCH }}.sh \
+          -q -O /tmp/cmake-install.sh \
+          && chmod u+x /tmp/cmake-install.sh \
+          && mkdir /opt/cmake-3.25.3 \
+          && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.25.3 \
+          && rm /tmp/cmake-install.sh \
+          && ln -sf /opt/cmake-3.25.3/bin/* /usr/local/bin
+
       - name: Build the project
         if: ${{ steps.check_change.outputs.has_changes == 'true' }}
         run: |
@@ -105,11 +119,11 @@ jobs:
           python3 scripts/build.py
 
           echo 11111
-          ls ${{ github.workspace }}
-          echo 2222
           ls ${{ github.workspace }}/ws
-          echo 333
-          ls ${{ github.workspace }}/sisdk_v2025.6.1/extension
+
+          cd ${{ github.workspace}} \
+          && make all          
+
       # - name: Create GitHub App Token
       #   id: app-token
       #   uses: actions/create-github-app-token@v2

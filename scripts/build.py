@@ -143,81 +143,59 @@ def add_sdk_extension(sdk_dir, extension , extension_version):
 		os.system(slc_path + " signature trust -extpath " + sdk_extension_dir)
 
 
-def checkSlcpGCC(makefile):
-	print ( 'GNU ARM Embedded: Checking ' + makefile )
-	ARMGCCPath = GetARMGCCPath()
-	ARMGCCBuild = [
-		'make',
-		'TOOLDIR={}'.format(ARMGCCPath)
-	]
+def replace_in_file(filename, old_string, new_string):
+	with open(filename, "r") as file:
+		filedata = file.read()
+	# Replace the target string
+	filedata = filedata.replace(old_string, new_string)
+	
+	# Write the file out again
+	with open(filename, "w") as file:
+		file.write(filedata)
 
-	commandline = ARMGCCBuild + [
-		'-f',
-		os.path.basename(makefile),
-		'clean'
-	]
-	ret = buildTarget(os.path.dirname(makefile), commandline, "GNU ARM Embedded")
-	if ret != 0:
-		print('GNU ARM Embedded: Error cleaning ', makefile)
-		os.sys.exit(1)
 
-	# Build
-	config = 'release'
-	commandline = ARMGCCBuild + [
-		config,
-		# '-j',
-		'-f',
-		os.path.basename(makefile)
-	]
+def pre_build_cmake(project_name, cmake_dir):
+	# Scan .slcp project file path
+	# file = open(
+	#     os.path.join(os.environ.get("GITHUB_WORKSPACE"), "solution_list.txt"), "r"
+	# )
+	# slcp_project_path_list = []
+	# for line in file:
+	#     if line.find(".slcp") != -1:
+	#         slcp_project = os.path.join(
+	#             os.environ.get("GITHUB_WORKSPACE"), line.strip()
+	#         )
+	#         slcp_project_path_list.append(slcp_project)
 
-	commandline.append('CFLAGS=-Wall -Wextra -Werror -Wa,--fatal-warnings')
-	commandline.append('CXXFLAGS=-Wall -Wextra -Werror -Wa,--fatal-warnings')
-	commandline.append('ASMFLAGS=-Wall -Wextra -Werror')
-	commandline.append('LDFLAGS=-Wl,--fatal-warnings')
+	# for slcp_file in slcp_project_path_list:
+		project_dir = os.path.dirname(cmake_dir)
+		# print(80*"*")
+		# print("Project directory:", project_dir)
 
-	ret = buildTarget(os.path.dirname(makefile), commandline, "GNU ARM Embedded")
-	sys.stdout.flush()
+		pre_build_makefile = os.path.join(
+			os.environ.get("GITHUB_WORKSPACE"), "scripts/Makefile"
+		)
+		os.system("cp " + pre_build_makefile + " " + project_dir)
+		project_make_path = os.path.join(project_dir, "Makefile")
+		# If use Simplicity Studio v6
+		# if os.path.isdir(os.path.join(project_dir, "cmake_gcc")):
+		#     print("Buiding for Studio 6")
+		#     replace_in_file(project_make_path, "project_name_cmake", str("cmake_gcc"))
+		# else:
+		replace_in_file(project_make_path, "project_name", str(project_name))
 
-	if ret != 0:
-		print('GNU ARM Embedded: Error building ({}) \n'.format(makefile)) 
-	else:
-		print('GNU ARM Embedded: SUCCESS ({}) \n'.format(makefile)) 
-				
-def buildTarget(builddir, commandline, messagecontext=None):
-	if messagecontext != None:
-		print ( messagecontext + '> ' + ' '.join(commandline) )
-	start = time.time()
-	build = subprocess.Popen(commandline, cwd=builddir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	output,err = build.communicate()
-	output = output.decode('utf-8', 'ignore')
-	err = err.decode('utf-8', 'ignore')
-	print(output)
-	print("Elapsed Time [Building or Make-cleaning]: {0:.2f} sec".format(time.time()-start))
+		if not os.path.isfile(os.path.join(project_dir, "Makefile")):
+			print("Error: Not found Makefile in project folder:", project_dir)
+			sys.exit(1)
 
-	if build.returncode != 0:
-		print("process return code {}".format(build.returncode))
-		# Sometime these examples are not procuding errors but return code still != 0
-		if (output.find('Build Finished') != -1 and output.find('error:') == -1):
-			build.returncode = 0
-		if not err:
-			# Some toolchains don't use stderr for error output, return stdout instead
-			err = output
-		print(err, file=sys.stderr)
+		# Update root Makefile
+		file_path = os.path.join(os.environ.get("GITHUB_WORKSPACE"), "Makefile")
+		string_to_add = "\t${MAKE} -C " + project_dir + " ${TARGET} TYPE=${TYPE}\n"
+		string_to_add = "\t@echo ===========================================================\n"
+		string_to_add = "\t@echo ===========================================================\n"
 
-	if (build.returncode == 0 and ((output.find('Warning:') != -1) or (output.find('warning:') != -1))):
-		# Check warning come from sdk or author
-		for item in output.split("\n"):
-			if (item.find('warning:') != -1 and item.find('autogen/') == -1 and item.find('gecko_sdk_') == -1 and item.find('sdks') == -1 and item.find('wiseconnect3_sdk') == -1):
-				build.returncode = 1
-				err = output
-				print(err, file=sys.stderr)
-				break
-
-	if build.returncode != 0:
-		sys.exit(build.returncode)
-
-	return build.returncode
-
+		with open(file_path, "a") as file:
+			file.write(string_to_add)
 
 
 def build_slcp_project(slcp_file):
@@ -257,8 +235,9 @@ def build_slcp_project(slcp_file):
 	print("\n\n")
 
 
-	workspace = os.path.join(GetWorkspacePath(), "ws")
+	
 	project_name = os.path.basename(slcp_file).replace(".slcp", "")
+	workspace = os.path.join(GetWorkspacePath(), "ws", project_name)
 
 	os.system(slc_cli_Path + " configuration --gcc-toolchain " + os.environ.get("ARM_GCC_DIR"))
 	if (wiseconnect3_sdk_version != None):
@@ -266,8 +245,10 @@ def build_slcp_project(slcp_file):
 	else:				
 		os.system(slc_cli_Path + " generate --force " + slcp_file + " -cp -np -d " + workspace + " -name={}".format(project_name) + " --with=" + board_id)	
 
-	project_mak = workspace + '/{}.Makefile'.format(project_name)
-	checkSlcpGCC(project_mak)
+	# project_mak = workspace + '/{}.Makefile'.format(project_name)
+	cmake_dir = os.path.join(workspace, project_name + "_cmake")
+	pre_build_cmake(project_name, cmake_dir)
+	# checkSlcpGCC(project_mak)
 	# os.system("cd " + workspace + " && make -f " + project_mak)
 
 	# Check build result

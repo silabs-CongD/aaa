@@ -108,6 +108,8 @@ jobs:
           ls ${{ github.workspace }}
           echo 2222
           ls ${{ github.workspace }}/ws
+          echo 333
+          ls ${{ github.workspace }}/sisdk_v2025.6.1/extension
       # - name: Create GitHub App Token
       #   id: app-token
       #   uses: actions/create-github-app-token@v2

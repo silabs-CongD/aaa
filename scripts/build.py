@@ -28,7 +28,7 @@ def got_simplicity_sdk(slcp_file):
 				if regex:
 					simplicity_sdk_version = "v" + regex[0]
 					# Check existing and clone
-					sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)
+					sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_" +  simplicity_sdk_version)
 					if os.path.isdir(sdk_dir):
 						repo = Repo.clone_from(
 						'https://github.com/SiliconLabs/simplicity_sdk.git',
@@ -149,7 +149,7 @@ def build_slcp_project(slcp_file):
 		os.sys.exit(1)
 	print("simplicity_sdk version is:", simplicity_sdk_version)
 	
-	sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_", simplicity_sdk_version)
+	sdk_dir = os.path.join(GetWorkspacePath(), "sisdk_" +  simplicity_sdk_version)
 
 	wiseconnect3_sdk_version = got_wiseconnect3_sdk(slcp_file)
 	if wiseconnect3_sdk_version:

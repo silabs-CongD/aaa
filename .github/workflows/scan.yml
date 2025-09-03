@@ -1,14 +1,17 @@
-name: 04-TruffleHog-Security-Scan
+name: 03-TruffleHog-Security-Scan
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+
 jobs:
   trufflehog_scan:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
+    - name: Checkout Fork Repo
       uses: actions/checkout@v4
       with:
+        repository: ${{ github.event.pull_request.head.user.login }}/${{ github.event.repository.name }}
+        ref: ${{ github.event.pull_request.head.ref }}
         fetch-depth: 0
 
     - name: Secret Scanning

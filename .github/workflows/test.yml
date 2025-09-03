@@ -34,9 +34,9 @@ jobs:
       - name: Check the change
         id: check_change
         run: |
-          git remote add upstream https://github.com/silabs-CongD/aaa.git
+          git remote add upstream https://github.com/${{ github.repository }}.git
           git fetch upstream
-          git diff --name-only upstream/master HEAD > git_log.txt
+          git diff --name-only upstream/${{ github.event.repository.default_branch }} HEAD > git_log.txt
           grep -v "scripts\\|.github\\|.gitmodules" git_log.txt > git_diff.txt
 
           xargs -I{} -a git_diff.txt find {} -type f -name "*.[ch]" > source_list.txt
@@ -118,11 +118,9 @@ jobs:
           mkdir ${{ github.workspace }}/ws
           python3 scripts/build.py
 
-          echo 11111
-          ls ${{ github.workspace }}/ws
-
-          echo 22222
+          printf '%*s\n' 100 '' | tr ' ' '*'
           cat ${{ github.workspace}}/Makefile
+          printf '%*s\n' 100 '' | tr ' ' '*'
           
           cd ${{ github.workspace}} \
           && make all          
